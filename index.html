@@ -13,20 +13,22 @@
         .sidebar { width: 260px; height: 100vh; position: fixed; left: 0; top: 0; background: #1e293b; color: white; z-index: 50; }
         .main-content { margin-left: 260px; min-height: 100vh; background: #f8fafc; }
         .card { background: white; border-radius: 12px; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1); padding: 1.5rem; }
+        .nav-item { cursor: pointer; transition: all 0.2s; }
+        .nav-item.active { background-color: #2563eb; color: white; }
     </style>
 </head>
 <body>
 
-    <!-- 사이드바 (네비게이션 유지) -->
+    <!-- 사이드바 -->
     <aside class="sidebar p-6 hidden md:block">
         <div class="mb-8">
             <h2 class="text-xl font-bold text-blue-400">Sales Ops</h2>
             <p class="text-xs text-slate-400 uppercase tracking-wider mt-1 font-semibold">2026 Performance</p>
         </div>
         <nav class="space-y-1">
-            <p class="text-xs font-semibold text-slate-500 uppercase mb-2">3월 실적</p>
-            <a href="#" class="block px-3 py-2 bg-blue-600 rounded-md text-sm font-medium">03월 01주차 (현재)</a>
-            <a href="#" class="block px-3 py-2 hover:bg-slate-700 rounded-md text-sm text-slate-300 transition">03월 02주차 (예정)</a>
+            <p class="text-xs font-semibold text-slate-500 uppercase mb-2">3월 실적 리포트</p>
+            <div id="nav-week1" onclick="switchWeek(1)" class="nav-item block px-3 py-2 active rounded-md text-sm font-medium">03월 01주차</div>
+            <div id="nav-week2" onclick="switchWeek(2)" class="nav-item block px-3 py-2 hover:bg-slate-700 rounded-md text-sm text-slate-300">03월 02주차</div>
             
             <p class="text-xs font-semibold text-slate-500 uppercase mt-6 mb-2">과거 기록</p>
             <a href="#" class="block px-3 py-2 hover:bg-slate-700 rounded-md text-sm text-slate-300 transition">02월 전체 실적</a>
@@ -38,8 +40,8 @@
         <!-- 상단 바 -->
         <header class="flex justify-between items-center mb-8 bg-white p-5 rounded-xl shadow-sm border border-slate-200">
             <div>
-                <h1 class="text-2xl font-bold text-slate-800">주차별 실적 리포트 <span class="text-blue-600 ml-2">26년 3월 1주차</span></h1>
-                <p class="text-sm text-slate-500 mt-1">기준: 2026-03-01 ~ 2026-03-05</p>
+                <h1 class="text-2xl font-bold text-slate-800">주차별 실적 리포트 <span id="display-week-title" class="text-blue-600 ml-2">26년 3월 1주차</span></h1>
+                <p id="display-date-range" class="text-sm text-slate-500 mt-1">기준: 2026-03-01 ~ 2026-03-07</p>
             </div>
             <div class="flex items-center gap-4">
                 <input type="file" id="csvInput" class="hidden" accept=".csv">
@@ -48,7 +50,7 @@
                 </button>
                 <div class="text-right border-l pl-4 border-slate-200">
                     <p class="text-[10px] text-slate-400 font-bold uppercase">Last Update</p>
-                    <p class="text-sm font-bold text-slate-700">2026-03-05 14:20</p>
+                    <p id="last-update-time" class="text-sm font-bold text-slate-700">2026-03-13 14:40</p>
                 </div>
             </div>
         </header>
@@ -57,31 +59,30 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div class="card border-t-4 border-blue-500">
                 <p class="text-xs font-bold text-slate-500 uppercase">누적 매출액</p>
-                <p class="text-2xl font-bold mt-1 text-slate-800">1,143,972</p>
+                <p id="kpi-total-sales" class="text-2xl font-bold mt-1 text-slate-800">1,143,972</p>
                 <p class="text-xs text-green-600 font-bold mt-2">▲ 4.2% <span class="text-slate-400 font-normal">vs LY</span></p>
             </div>
             <div class="card border-t-4 border-indigo-500">
-                <p class="text-xs font-bold text-slate-500 uppercase">주간 실적 (3월 1주)</p>
-                <p class="text-2xl font-bold mt-1 text-blue-600">72,414</p>
-                <p class="text-xs text-slate-400 mt-2">3월 목표의 7.1%</p>
+                <p id="kpi-week-label" class="text-xs font-bold text-slate-500 uppercase">주간 실적 (3월 1주)</p>
+                <p id="kpi-week-sales" class="text-2xl font-bold mt-1 text-blue-600">72,414</p>
+                <p id="kpi-week-desc" class="text-xs text-slate-400 mt-2">3월 목표의 7.1%</p>
             </div>
             <div class="card border-t-4 border-emerald-500">
                 <p class="text-xs font-bold text-slate-500 uppercase">연간 달성률</p>
-                <p class="text-2xl font-bold mt-1 text-slate-800">11.1%</p>
+                <p id="kpi-attain-rate" class="text-2xl font-bold mt-1 text-slate-800">11.1%</p>
                 <div class="w-full bg-slate-100 h-1.5 mt-3 rounded-full overflow-hidden">
-                    <div class="bg-emerald-500 h-full" style="width: 11.1%"></div>
+                    <div id="kpi-attain-bar" class="bg-emerald-500 h-full" style="width: 11.1%"></div>
                 </div>
             </div>
             <div class="card border-t-4 border-orange-500">
                 <p class="text-xs font-bold text-slate-500 uppercase">누적 수주액</p>
-                <p class="text-2xl font-bold mt-1 text-slate-800">1,215,832</p>
+                <p id="kpi-total-orders" class="text-2xl font-bold mt-1 text-slate-800">1,215,832</p>
                 <p class="text-xs text-slate-400 mt-2">수주 대비 매출 94%</p>
             </div>
         </div>
 
-        <!-- 기존 실적 화면 출력 리스트 (테이블 섹션) -->
+        <!-- 실적 테이블 -->
         <div class="space-y-8">
-            <!-- 1. 품목별 매출실적 리스트 -->
             <div class="card">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-lg font-bold text-slate-800">1. 품목별 매출실적 상세</h3>
@@ -96,82 +97,34 @@
                                 <th class="py-3 px-4 text-right font-bold text-slate-600">비중</th>
                                 <th class="py-3 px-4 text-right font-bold text-slate-600">1월 실적</th>
                                 <th class="py-3 px-4 text-right font-bold text-slate-600">2월 실적</th>
-                                <th class="py-3 px-4 text-right font-bold text-blue-600">3월 1주</th>
+                                <th id="table-week-header" class="py-3 px-4 text-right font-bold text-blue-600">3월 1주</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            <tr class="hover:bg-slate-50 transition">
-                                <td class="py-3 px-4 font-bold text-slate-700 uppercase italic">Total Sum</td>
-                                <td class="py-3 px-4 text-right font-bold">1,143,972</td>
-                                <td class="py-3 px-4 text-right text-slate-400">-</td>
-                                <td class="py-3 px-4 text-right">584,482</td>
-                                <td class="py-3 px-4 text-right">487,076</td>
-                                <td class="py-3 px-4 text-right font-bold text-orange-600">72,414</td>
-                            </tr>
-                            <tr>
-                                <td class="py-3 px-4 text-slate-600">유니트 (Unit)</td>
-                                <td class="py-3 px-4 text-right">69,918</td>
-                                <td class="py-3 px-4 text-right text-slate-400 text-xs">6%</td>
-                                <td class="py-3 px-4 text-right">25,493</td>
-                                <td class="py-3 px-4 text-right">37,425</td>
-                                <td class="py-3 px-4 text-right font-medium">7,000</td>
-                            </tr>
-                            <tr>
-                                <td class="py-3 px-4 text-slate-600">영상 (Imaging)</td>
-                                <td class="py-3 px-4 text-right">48,899</td>
-                                <td class="py-3 px-4 text-right text-slate-400 text-xs">4%</td>
-                                <td class="py-3 px-4 text-right">26,056</td>
-                                <td class="py-3 px-4 text-right">12,447</td>
-                                <td class="py-3 px-4 text-right font-medium">10,395</td>
-                            </tr>
-                            <tr>
-                                <td class="py-3 px-4 text-slate-600">레스피 (Respi)</td>
-                                <td class="py-3 px-4 text-right">19,885</td>
-                                <td class="py-3 px-4 text-right text-slate-400 text-xs">2%</td>
-                                <td class="py-3 px-4 text-right">6,323</td>
-                                <td class="py-3 px-4 text-right">12,459</td>
-                                <td class="py-3 px-4 text-right font-medium">1,103</td>
-                            </tr>
-                            <tr class="bg-blue-50/30">
-                                <td class="py-3 px-4 text-slate-600">소모품 및 기타</td>
-                                <td class="py-3 px-4 text-right">1,005,270</td>
-                                <td class="py-3 px-4 text-right text-slate-400 text-xs">88%</td>
-                                <td class="py-3 px-4 text-right font-medium">526,610</td>
-                                <td class="py-3 px-4 text-right font-medium">424,745</td>
-                                <td class="py-3 px-4 text-right font-bold">53,916</td>
-                            </tr>
+                        <tbody id="product-table-body" class="divide-y divide-slate-100">
+                            <!-- 데이터 연동 -->
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- 2. 부문별 성과 요약 리스트 -->
+            <!-- 부문별 성과 -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="card">
-                    <h3 class="text-lg font-bold text-slate-800 mb-6">2. 팀별 목표 대비 실적</h3>
+                    <h3 class="text-lg font-bold text-slate-800 mb-6">2. 팀별 매출 비중</h3>
                     <div class="h-64 mb-6"><canvas id="teamChart"></canvas></div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
-                            <span class="text-sm font-bold text-slate-600">대리점영업</span>
-                            <span class="text-sm font-bold text-emerald-600">560,609 <span class="text-slate-400 text-xs">(11.2%)</span></span>
-                        </div>
-                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
-                            <span class="text-sm font-bold text-slate-600">직판영업</span>
-                            <span class="text-sm font-bold text-blue-600">362,560 <span class="text-slate-400 text-xs">(13.4%)</span></span>
-                        </div>
-                        <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
-                            <span class="text-sm font-bold text-slate-600">해외영업</span>
-                            <span class="text-sm font-bold text-slate-500">220,803 <span class="text-slate-400 text-xs">(8.5%)</span></span>
-                        </div>
+                    <div id="team-list" class="space-y-3">
+                        <!-- 데이터 연동 -->
                     </div>
                 </div>
 
                 <div class="card">
-                    <h3 class="text-lg font-bold text-slate-800 mb-6">3. 월별 매출 트렌드</h3>
-                    <div class="h-64 mb-6"><canvas id="trendChart"></canvas></div>
-                    <div class="p-4 bg-amber-50 rounded-xl border border-amber-100">
-                        <p class="text-sm text-amber-800 leading-relaxed font-medium">
-                            <strong>특이사항:</strong> 대리점 부문은 3월 초 기세가 좋아 월말까지 긍정적인 흐름이 예상됩니다.
+                    <h3 class="text-lg font-bold text-slate-800 mb-6">3. 인사이트 및 특이사항</h3>
+                    <div class="h-64 mb-6 flex items-center justify-center bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                    <div id="insight-box" class="p-4 rounded-xl border transition-all duration-300">
+                        <p id="week-insight" class="text-sm leading-relaxed font-medium">
+                            데이터를 불러오는 중입니다...
                         </p>
                     </div>
                 </div>
@@ -180,84 +133,165 @@
     </main>
 
     <script>
-        window.onload = function() {
-            initCharts();
+        // 전역 변수로 차트 인스턴스 관리
+        let teamChart, trendChart;
+
+        const weekData = {
+            1: {
+                title: "26년 3월 1주차",
+                dateRange: "기준: 2026-03-01 ~ 2026-03-07",
+                kpi: {
+                    totalSales: "1,143,972",
+                    weekSales: "72,414",
+                    weekLabel: "주간 실적 (3월 1주)",
+                    weekDesc: "3월 목표의 7.1%",
+                    attainRate: "11.1%",
+                    totalOrders: "1,215,832"
+                },
+                products: [
+                    { name: "Total Sum", total: "1,143,972", ratio: "-", jan: "584,482", feb: "487,076", current: "72,414" },
+                    { name: "유니트 (Unit)", total: "69,918", ratio: "6%", jan: "25,493", feb: "37,425", current: "7,000" },
+                    { name: "영상 (Imaging)", total: "48,899", ratio: "4%", jan: "26,056", feb: "12,447", current: "10,395" },
+                    { name: "레스피 (Respi)", total: "19,885", ratio: "2%", jan: "6,323", feb: "12,459", current: "1,103" },
+                    { name: "소모품 및 기타", total: "1,005,270", ratio: "88%", jan: "526,610", feb: "424,745", current: "53,916" }
+                ],
+                teams: [
+                    { name: "대리점영업", value: 560609, color: "#10b981", percent: "11.2%" },
+                    { name: "직판영업", value: 362560, color: "#3b82f6", percent: "13.4%" },
+                    { name: "해외영업", value: 220803, color: "#94a3b8", percent: "8.5%" }
+                ],
+                trend: [584482, 487076, 72414],
+                insightClass: "bg-amber-50 border-amber-100 text-amber-800",
+                insight: "<strong>특이사항:</strong> 3월 1주차 해외영업 부문에서 환불/조정액(-5,691)이 반영되어 일시적으로 누적 실적이 하향되었습니다. 대리점 채널 소모품 매출은 예년 수준의 흐름을 유지 중입니다."
+            },
+            2: {
+                title: "26년 3월 2주차",
+                dateRange: "기준: 2026-03-08 ~ 2026-03-13",
+                kpi: {
+                    totalSales: "1,210,425",
+                    weekSales: "66,453",
+                    weekLabel: "주간 실적 (3월 2주)",
+                    weekDesc: "3월 목표의 13.6% 달성 중",
+                    attainRate: "11.8%",
+                    totalOrders: "1,315,832"
+                },
+                products: [
+                    { name: "Total Sum", total: "1,210,425", ratio: "-", jan: "584,482", feb: "487,076", current: "138,867" },
+                    { name: "유니트 (Unit)", total: "70,083", ratio: "6%", jan: "25,493", feb: "37,425", current: "7,165" },
+                    { name: "영상 (Imaging)", total: "48,899", ratio: "4%", jan: "26,056", feb: "12,447", current: "10,395" },
+                    { name: "레스피 (Respi)", total: "19,885", ratio: "2%", jan: "6,323", feb: "12,459", current: "1,103" },
+                    { name: "소모품 및 기타", total: "1,071,558", ratio: "88%", jan: "526,610", feb: "424,745", current: "120,204" }
+                ],
+                teams: [
+                    { name: "대리점영업", value: 585210, color: "#10b981", percent: "11.7%" },
+                    { name: "직판영업", value: 362560, color: "#3b82f6", percent: "13.4%" },
+                    { name: "해외영업", value: 262655, color: "#94a3b8", percent: "10.1%" }
+                ],
+                trend: [584482, 487076, 138867],
+                insightClass: "bg-blue-50 border-blue-100 text-blue-800",
+                insight: "<strong>2주차 동향:</strong> <b>NAVILLOON 대량 수주(30 set, Danialex)</b>로 인해 누적 수주액이 크게 상승했습니다. 신규 장비인 <b>유스타큐어</b>는 B2B 카드 결제방식을 통해 시장 초기 진입을 확인했습니다."
+            }
         };
 
-        function initCharts() {
-            // 트렌드 차트 (막대 + 라인 혼합)
-            const trendCtx = document.getElementById('trendChart').getContext('2d');
-            new Chart(trendCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['1월', '2월', '3월(1주)'],
-                    datasets: [
-                        {
-                            label: '월별 실적',
-                            data: [584482, 487076, 72414],
-                            backgroundColor: '#3b82f6',
-                            borderRadius: 4,
-                            barThickness: 30
-                        },
-                        {
-                            label: '추세',
-                            data: [584482, 487076, 72414],
-                            type: 'line',
-                            borderColor: '#f59e0b',
-                            pointBackgroundColor: '#fff',
-                            pointBorderWidth: 2,
-                            tension: 0.3
-                        }
-                    ]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' } } }
-                }
+        function switchWeek(weekNum) {
+            const data = weekData[weekNum];
+            if (!data) return;
+            
+            // UI 텍스트 업데이트
+            document.getElementById('display-week-title').innerText = data.title;
+            document.getElementById('display-date-range').innerText = data.dateRange;
+            document.getElementById('table-week-header').innerText = `3월 ${weekNum}주`;
+            
+            // 네비게이션 활성 스타일
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active', 'bg-blue-600', 'text-white'));
+            const activeNav = document.getElementById(`nav-week${weekNum}`);
+            if (activeNav) activeNav.classList.add('active', 'bg-blue-600', 'text-white');
+
+            // KPI 업데이트
+            document.getElementById('kpi-total-sales').innerText = data.kpi.totalSales;
+            document.getElementById('kpi-week-label').innerText = data.kpi.weekLabel;
+            document.getElementById('kpi-week-sales').innerText = data.kpi.weekSales;
+            document.getElementById('kpi-week-desc').innerText = data.kpi.weekDesc;
+            document.getElementById('kpi-attain-rate').innerText = data.kpi.attainRate;
+            document.getElementById('kpi-attain-bar').style.width = data.kpi.attainRate;
+            document.getElementById('kpi-total-orders').innerText = data.kpi.totalOrders;
+
+            // 테이블 업데이트
+            const tbody = document.getElementById('product-table-body');
+            tbody.innerHTML = '';
+            data.products.forEach((p) => {
+                const isTotal = p.name === 'Total Sum';
+                const row = `
+                    <tr class="${isTotal ? 'bg-blue-50/30 font-bold' : 'hover:bg-slate-50'} transition">
+                        <td class="py-3 px-4 ${isTotal ? 'italic uppercase' : 'text-slate-600'}">${p.name}</td>
+                        <td class="py-3 px-4 text-right">${p.total}</td>
+                        <td class="py-3 px-4 text-right text-slate-400 text-xs">${p.ratio}</td>
+                        <td class="py-3 px-4 text-right">${p.jan}</td>
+                        <td class="py-3 px-4 text-right">${p.feb}</td>
+                        <td class="py-3 px-4 text-right ${isTotal ? 'text-orange-600' : 'font-medium'}">${p.current}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
             });
 
-            // 팀별 차트
+            // 인사이트 박스 업데이트
+            const iBox = document.getElementById('insight-box');
+            iBox.className = `p-4 rounded-xl border transition-all duration-300 ${data.insightClass}`;
+            document.getElementById('week-insight').innerHTML = data.insight;
+
+            // 팀 리스트 업데이트
+            const teamList = document.getElementById('team-list');
+            teamList.innerHTML = '';
+            data.teams.forEach(t => {
+                teamList.innerHTML += `
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                        <span class="text-sm font-bold text-slate-600">${t.name}</span>
+                        <span class="text-sm font-bold" style="color: ${t.color}">${t.value.toLocaleString()} <span class="text-slate-400 text-xs">(${t.percent})</span></span>
+                    </div>
+                `;
+            });
+
+            updateCharts(data);
+        }
+
+        function updateCharts(data) {
+            // 팀 비중 도넛 차트
             const teamCtx = document.getElementById('teamChart').getContext('2d');
-            new Chart(teamCtx, {
+            if(teamChart) teamChart.destroy();
+            teamChart = new Chart(teamCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['대리점', '직판', '해외'],
+                    labels: data.teams.map(t => t.name),
                     datasets: [{
-                        data: [560609, 362560, 220803],
-                        backgroundColor: ['#10b981', '#3b82f6', '#94a3b8'],
+                        data: data.teams.map(t => t.value),
+                        backgroundColor: data.teams.map(t => t.color),
                         borderWidth: 0,
                         hoverOffset: 15
                     }]
                 },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    cutout: '70%',
-                    plugins: { 
-                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } }
+            });
+
+            // 월별 트렌드 차트
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            if(trendChart) trendChart.destroy();
+            trendChart = new Chart(trendCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['1월', '2월', '3월(누적)'],
+                    datasets: [
+                        { label: '월실적', data: data.trend, backgroundColor: '#3b82f6', borderRadius: 4 },
+                        { label: '추세', data: data.trend, type: 'line', borderColor: '#f59e0b', tension: 0.3 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         }
 
-        // CSV 업로드 핸들러
-        document.getElementById('csvInput').onchange = function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            Papa.parse(file, {
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    console.log("새로운 주차 데이터 수신:", results.data);
-                    // 추후 여기에 특정 ID의 테이블이나 차트를 업데이트하는 로직을 추가하여
-                    // '자동화'를 완성할 수 있습니다.
-                    alert(file.name + ' 데이터를 성공적으로 분석했습니다.');
-                }
-            });
-        };
+        // 페이지 로드 시 초기화
+        window.addEventListener('load', function() {
+            switchWeek(1);
+        });
     </script>
 </body>
 </html>
